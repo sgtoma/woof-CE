@@ -1,46 +1,51 @@
 name: release-bookworm
+
 on:
   workflow_dispatch:
     inputs:
       name:
-        description: Human-readable name
+        description: 'Human-readable name'
         required: true
-        default: BookwormPup64 CE
+        default: 'BookwormPup64 CE'
       version:
-        description: Version number
+        description: 'Version number'
         required: true
-        default: "1.0"
+        default: '1.0'
       suffix:
-        description: Release name suffix, with leading - (optional)
+        description: 'Release name suffix, with leading - (optional)'
         required: false
-        default: ""
+        default: ''
       arch:
-        description: Architecture (x86_64 or x86)
-        required: true
+        description: 'Architecture'
+        type: choice
+        options: [x86_64, x86]
         default: x86_64
       compat-distro:
-        description: Compatible distro (debian or ubuntu)
-        required: true
+        description: 'Compatible distro (target)'
+        type: choice
+        options: [debian, ubuntu]
         default: debian
       compat-distro-version:
-        description: Compatible distro version (bookworm64 / jammy64 / noble64)
-        required: true
+        description: 'Compatible distro version'
+        type: choice
+        options: [bookworm64, jammy64, noble64]
         default: bookworm64
       kernel:
-        description: Kernel version hint (not strictly enforced)
+        description: 'Kernel version hint (not strictly enforced)'
         required: false
-        default: 5.15.x
+        default: '5.15.x'
       prefix:
-        description: File name prefix for tag/release
+        description: 'File name prefix for tag/release'
         required: false
-        default: bookwarmpup64ce
+        default: 'bookwormpup64ce'
       release:
-        description: Upload release draft (true/false)
-        required: false
-        default: "false"
+        description: 'Upload release draft'
+        type: boolean
+        default: false
       runner:
-        description: Build environment (ubuntu-22.04 or ubuntu-24.04)
-        required: false
+        description: 'Build environment (GitHub runner)'
+        type: choice
+        options: [ubuntu-22.04, ubuntu-24.04]
         default: ubuntu-22.04
 
 permissions:
@@ -49,46 +54,34 @@ permissions:
 jobs:
   build:
     name: Build ISO
-    runs-on: ${{ github.event.inputs.runner }}
+    runs-on: ${{ inputs.runner }}
     env:
-      NAME: ${{ github.event.inputs.name }}
-      VER: ${{ github.event.inputs.version }}
-      SUFFIX: ${{ github.event.inputs.suffix }}
-      ARCH: ${{ github.event.inputs.arch }}
-      COMPAT: ${{ github.event.inputs.compat-distro }}
-      VERSTR: ${{ github.event.inputs.compat-distro-version }}
-      KERNEL: ${{ github.event.inputs.kernel }}
-      PREFIX: ${{ github.event.inputs.prefix }}
+      NAME: ${{ inputs.name }}
+      VER: ${{ inputs.version }}
+      SUFFIX: ${{ inputs.suffix }}
+      ARCH: ${{ inputs.arch }}
+      COMPAT: ${{ inputs.compat-distro }}
+      VERSTR: ${{ inputs.compat-distro-version }}
+      KERNEL: ${{ inputs.kernel }}
+      PREFIX: ${{ inputs.prefix }}
       DEBIAN_FRONTEND: noninteractive
       TZ: UTC
     steps:
-      - name: Checkout repo (branch you ran from)
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Show inputs
         run: |
-          echo "NAME=$NAME"
-          echo "VER=$VER"
-          echo "SUFFIX=$SUFFIX"
-          echo "ARCH=$ARCH"
-          echo "COMPAT=$COMPAT"
-          echo "VERSTR=$VERSTR"
-          echo "KERNEL=$KERNEL"
-          echo "PREFIX=$PREFIX"
-          echo "Runner=$(lsb_release -sd || true)"
+          echo "ARCH=$ARCH COMPAT=$COMPAT VERSTR=$VERSTR Runner=${{ inputs.runner }}"
 
       - name: Validate distro/version combo
         shell: bash
         run: |
           set -e
           if [[ "$COMPAT" == "debian" && "$VERSTR" != "bookworm64" ]]; then
-            echo "::error::Invalid combo: debian must use bookworm64"
-            exit 1
-          fi
+            echo "::error::debian must use bookworm64"; exit 1; fi
           if [[ "$COMPAT" == "ubuntu" && "$VERSTR" != "jammy64" && "$VERSTR" != "noble64" ]]; then
-            echo "::error::Invalid combo: ubuntu must use jammy64 or noble64"
-            exit 1
-          fi
+            echo "::error::ubuntu must use jammy64 or noble64"; exit 1; fi
 
       - name: Install build deps
         run: |
@@ -102,25 +95,11 @@ jobs:
         run: |
           set -eux
           CFG="woof-distro/${ARCH}/${COMPAT}/${VERSTR}"
-          if [[ ! -d "$CFG" ]]; then
-            echo "::error::Missing configuration directory: $CFG"
-            echo "Available under woof-distro/${ARCH}/${COMPAT}:"
-            ls -1 "woof-distro/${ARCH}/${COMPAT}" || true
-            exit 1
-          fi
+          [[ -d "$CFG" ]] || { echo "::error::Missing $CFG"; ls -1 "woof-distro/${ARCH}/${COMPAT}" || true; exit 1; }
           base="${VERSTR%64}"
-          if [[ "$COMPAT" == "debian" ]]; then
-            SPEC="$CFG/DISTRO_PKGS_SPECS-debian-${base}"
-          else
-            SPEC="$CFG/DISTRO_PKGS_SPECS-ubuntu-${base}"
-          fi
-          if [[ ! -f "$SPEC" ]]; then
-            echo "::error::Expected spec file not found: $SPEC"
-            exit 1
-          fi
+          SPEC="$CFG/DISTRO_PKGS_SPECS-${COMPAT}-${base}"
+          [[ -f "$SPEC" ]] || { echo "::error::Missing spec $SPEC"; exit 1; }
           echo "Using spec: $SPEC"
-          head -n 10 "$SPEC" || true
-          echo "Grepping for abiword rows (should be disabled if you used HARD variant):"
           grep -n '^.*abiword' "$SPEC" || true
 
       - name: Run merge2out
@@ -130,26 +109,6 @@ jobs:
           CFG="woof-distro/${ARCH}/${COMPAT}/${VERSTR}"
           chmod +x ./merge2out
           yes "" | sudo -E ./merge2out "$CFG"
-
-      - name: Locate build outputs
-        id: findout
-        shell: bash
-        run: |
-          set -eux
-          mapfile -t ISOS < <(find . -type f -name '*.iso' | sort)
-          mapfile -t SFS < <(find . -type f -name '*.sfs' | sort)
-          echo "Found ISOs: ${#ISOS[@]}"
-          printf '%s\n' "${ISOS[@]}" || true
-          echo "Found SFS: ${#SFS[@]}"
-          printf '%s\n' "${SFS[@]}" || true
-          {
-            echo "isos<<EOF"
-            printf '%s\n' "${ISOS[@]}"
-            echo "EOF"
-            echo "sfses<<EOF"
-            printf '%s\n' "${SFS[@]}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
 
       - name: Generate SHA512 checksums
         if: always()
@@ -164,7 +123,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.workflow }}-${{ github.event.inputs.arch }}-${{ github.event.inputs.compat-distro }}-${{ github.event.inputs.compat-distro-version }}-${{ github.run_number }}
+          name: ${{ github.workflow }}-${{ inputs.arch }}-${{ inputs.compat-distro }}-${{ inputs.compat-distro-version }}-${{ github.run_number }}
           path: |
             **/*.iso
             **/*.sfs
@@ -175,19 +134,19 @@ jobs:
   release:
     name: Create GitHub Release (optional)
     needs: build
-    if: ${{ github.event.inputs.release == 'true' }}
+    if: inputs.release == true
     runs-on: ubuntu-22.04
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ github.workflow }}-${{ github.event.inputs.arch }}-${{ github.event.inputs.compat-distro }}-${{ github.event.inputs.compat-distro-version }}-${{ github.run_number }}
+          name: ${{ github.workflow }}-${{ inputs.arch }}-${{ inputs.compat-distro }}-${{ inputs.compat-distro-version }}-${{ github.run_number }}
           path: .
       - name: Create Release (draft)
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ github.event.inputs.prefix }}-${{ github.event.inputs.version }}${{ github.event.inputs.suffix }}
-          tag_name: ${{ github.event.inputs.prefix }}-${{ github.event.inputs.version }}${{ github.event.inputs.suffix }}
+          name: ${{ inputs.prefix }}-${{ inputs.version }}${{ inputs.suffix }}
+          tag_name: ${{ inputs.prefix }}-${{ inputs.version }}${{ inputs.suffix }}
           draft: true
           prerelease: false
           fail_on_unmatched_files: true
