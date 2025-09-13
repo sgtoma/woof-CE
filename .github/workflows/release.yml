@@ -1,4 +1,4 @@
-name: release-bookworm
+name: release
 
 on:
   workflow_dispatch:
@@ -26,7 +26,7 @@ on:
         options: [debian, ubuntu]
         default: debian
       compat-distro-version:
-        description: 'Compatible distro version'
+        description: 'Compatible distro version (match the distro!)'
         type: choice
         options: [bookworm64, jammy64, noble64]
         default: bookworm64
@@ -39,12 +39,13 @@ on:
         required: false
         default: 'bookwormpup64ce'
       release:
-        description: 'Upload release draft'
         type: boolean
+        description: 'Create a GitHub Release (needs repo permissions: Read/Write)'
+        required: false
         default: false
       runner:
-        description: 'Build environment (GitHub runner)'
         type: choice
+        description: 'Build environment (GitHub runner)'
         options: [ubuntu-22.04, ubuntu-24.04]
         default: ubuntu-22.04
 
@@ -70,45 +71,48 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Show inputs
-        run: |
-          echo "ARCH=$ARCH COMPAT=$COMPAT VERSTR=$VERSTR Runner=${{ inputs.runner }}"
-
       - name: Validate distro/version combo
         shell: bash
         run: |
           set -e
           if [[ "$COMPAT" == "debian" && "$VERSTR" != "bookworm64" ]]; then
-            echo "::error::debian must use bookworm64"; exit 1; fi
+            echo "::error::Invalid combo: debian must use bookworm64"
+            exit 1
+          fi
           if [[ "$COMPAT" == "ubuntu" && "$VERSTR" != "jammy64" && "$VERSTR" != "noble64" ]]; then
-            echo "::error::ubuntu must use jammy64 or noble64"; exit 1; fi
+            echo "::error::Invalid combo: ubuntu must use jammy64 or noble64"
+            exit 1
+          fi
 
       - name: Install build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            bc bison build-essential ca-certificates cpio curl dosfstools gawk git jq \
-            mtools rsync squashfs-tools xorriso xz-utils zstd file wget
+          sudo apt-get install -y --no-install-recommends             bc bison build-essential ca-certificates cpio curl dosfstools gawk git jq             mtools rsync squashfs-tools xorriso xz-utils zstd file wget
 
-      - name: Confirm config path and spec file
+      - name: Build (merge2out + 0setup..3builddistro)
         shell: bash
         run: |
-          set -eux
+          set -euxo pipefail
           CFG="woof-distro/${ARCH}/${COMPAT}/${VERSTR}"
-          [[ -d "$CFG" ]] || { echo "::error::Missing $CFG"; ls -1 "woof-distro/${ARCH}/${COMPAT}" || true; exit 1; }
-          base="${VERSTR%64}"
-          SPEC="$CFG/DISTRO_PKGS_SPECS-${COMPAT}-${base}"
-          [[ -f "$SPEC" ]] || { echo "::error::Missing spec $SPEC"; exit 1; }
-          echo "Using spec: $SPEC"
-          grep -n '^.*abiword' "$SPEC" || true
-
-      - name: Run merge2out
-        shell: bash
-        run: |
-          set -eux
-          CFG="woof-distro/${ARCH}/${COMPAT}/${VERSTR}"
+          if [[ ! -d "$CFG" ]]; then
+            echo "::error::Missing configuration directory: $CFG"
+            echo "Available under woof-distro/${ARCH}/${COMPAT}:"
+            ls -1 "woof-distro/${ARCH}/${COMPAT}" || true
+            exit 1
+          fi
           chmod +x ./merge2out
-          yes "" | sudo -E ./merge2out "$CFG"
+          # Avoid 'yes | ...' SIGPIPE. Feed empty stdin instead.
+          sudo -E ./merge2out "$CFG" </dev/null
+
+          OUT="woof-out_${ARCH}_${ARCH}_${COMPAT}_${VERSTR}"
+          [[ -d "$OUT" ]] || { echo "::error::Expected output dir not found: $OUT"; exit 1; }
+
+          pushd "$OUT"
+          sudo -E ./0setup </dev/null
+          sudo -E ./1download </dev/null
+          sudo -E ./2createpackages </dev/null
+          sudo -E ./3builddistro </dev/null
+          popd
 
       - name: Generate SHA512 checksums
         if: always()
