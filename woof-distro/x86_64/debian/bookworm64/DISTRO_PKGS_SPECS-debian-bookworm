@@ -1,14 +1,16 @@
 #fallbacks when looking for pkgs (space-separated list)...
 FALLBACKS_COMPAT_VERSIONS=''
 
-# Minimal Woof-CE PKGS_SPECS_TABLE for Bookworm64 with:
-# PCManFM (+GVFS), Firefox ESR, mpv, Viewnior, Geany, Zathura,
-# and **LibreOffice Writer** instead of AbiWord.
-#
-# Core device/network/audio/Xorg/firmware kept ON.
-# Dev toolchain and bulky extras kept OFF to stay small.
+# HARD LibreOffice variant for Bookworm64:
+# - Puts `no|abiword|||` and `no|abiword-deps|||` at the very top so Woof-CE won't try to build AbiWord.
+# - Ships LibreOffice Writer instead.
 
 PKGS_SPECS_TABLE='
+# ---- Force-disable AbiWord right up front ----
+no|abiword|||
+no|abiword-deps|||
+
+# ---- Core base (kept) ----
 yes|acl|libacl1|exe,dev,doc,nls||deps:yes
 yes|adduser|adduser|exe,dev,doc,nls
 yes|alsa-lib|libasound2,libasound2-data,libasound2-dev,alsa-topology-conf,alsa-ucm-conf|exe,dev,doc,nls||deps:yes
@@ -17,7 +19,6 @@ yes|atk|libatk1.0-0,libatk1.0-dev|exe,dev,doc,nls||deps:yes
 yes|at-spi2-atk|libatspi2.0-0,libatk-bridge2.0-0,libatk-bridge2.0-dev,libatspi2.0-dev|exe,dev,doc,nls||deps:yes
 yes|base-files|base-files|exe>null,dev>null,doc>null,nls>null
 yes|bash|bash|exe,dev,doc,nls||deps:yes
-yes|bbe|bbe|exe,dev,doc,nls||deps:yes
 yes|bc|bc|exe,dev,doc,nls||deps:yes
 yes|bzip2|bzip2|exe,dev,doc,nls||deps:yes
 yes|brightnessctl|brightnessctl|exe,dev,doc,nls||deps:yes
@@ -187,7 +188,7 @@ no|xdg-desktop-portal-gtk|xdg-desktop-portal-gtk|exe,dev,doc,nls||deps:yes
 no|xdg-utils|xdg-utils|exe,dev,doc,nls||deps:yes
 '
 
-# Avoid source builds of mpv
+# Avoid source build of mpv
 PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
 no|mpv-deps|libavcodec-dev,libavfilter-dev,libass-dev,libva-dev,libvdpau-dev,liblua5.2-dev,libdvdnav-dev,libdvdread-dev,libbluray-dev,libwayland-cursor0,libxss-dev,libxpresent-dev,libxv-dev|exe,dev,doc,nls||deps:yes
 '
@@ -238,7 +239,7 @@ yes|non-free-firmware-pc|amd64-microcode,bluez-firmware,firmware-amd-graphics,fi
 "
 fi
 
-# Dpup Bookworm64 extra apps/libs (trimmed)
+# ---- Dpup extras (trimmed) ----
 PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
 no|qpdfview|qpdfview,qpdfview-djvu-plugin,qpdfview-ps-plugin,qpdfview-pdf-poppler-plugin,qpdfview-translations|exe,dev,doc,nls||deps:yes
 no|qwinff|qwinff|exe,dev,doc,nls||deps:yes
@@ -279,7 +280,7 @@ no|vobcopy|vobcopy|exe,dev,doc,nls||deps:yes
 no|wmctrl|wmctrl|exe,dev,doc,nls||deps:yes
 '
 
-# --- Your minimal desktop apps (with LibreOffice Writer) ---
+# ---- Your desktop apps (LibreOffice Writer) ----
 PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
 yes|pcmanfm|pcmanfm||
 yes|gvfs|gvfs||
@@ -289,8 +290,7 @@ no|rox-filer|||
 yes|firefox-esr|firefox-esr||
 yes|viewnior|viewnior||
 yes|geany|geany||
-no|abiword|||
-no|abiword-deps|||
+
 yes|libreoffice-writer|libreoffice-writer||
 
 yes|zathura|zathura||
