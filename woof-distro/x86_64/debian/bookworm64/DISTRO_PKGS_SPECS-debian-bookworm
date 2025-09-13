@@ -79,8 +79,8 @@ yes|gsettings-desktop-schemas|gsettings-desktop-schemas|exe,dev,doc,nls||deps:ye
 yes|gtk+3|libgtk-3-0,libgtk-3-dev,libgtk-3-common,gtk-update-icon-cache,adwaita-icon-theme|exe,dev,doc,nls||deps:yes #have taken out all gtk3 apps. 140127 still have gnome-mplayer --no
 yes|hdparm|hdparm|exe,dev>null,doc,nls||deps:yes
 yes|hicolor-icon-theme|hicolor-icon-theme|exe,dev>null,doc,nls||deps:yes
-yes|icu|libicu72,libicu-dev|exe,dev,doc,nls||deps:yes #scribus needs this though it is not listed as a dep. note, it is big, 7MB pkg. crap, better put it into main f.s. NO have manually put this dep into main db. harfbuzz needs icu also.
-yes|init-system-helpers|init-system-helpers|exe>null,dev>null,doc,nls||deps:yes #to prevent it from being installed as dependency..
+yes|icu|libicu72,libicu-dev|exe,dev,doc,nls||deps:yes #scribus needs this though it is not listed as a dep. note, it is big, 7MB pkg. crap, better put this dep into main f.s. NO have manually put this dep into main db. harfbuzz needs icu also.
+yes|init-system-helpers|init-system-helpers|exe>null,dev>null,doc,null,nls,null||deps:yes #to prevent it from being installed as dependency..
 yes|iptables|iptables,libip4tc2,libip6tc2,libxtables12,libnftnl11|exe,dev>exe,doc,nls||deps:yes
 yes|iw|iw|exe,dev,doc,nls||deps:yes
 yes|jq|jq,libjq1|exe,dev,doc,nls||deps:yes
@@ -104,7 +104,7 @@ yes|ntfs-3g|ntfs-3g|exe,dev,doc,nls||deps:yes
 yes|openssl|openssl,libssl3,libssl-dev|exe,dev,doc,nls||deps:yes #libssl1.0.2 = older libssl
 yes|parted|parted|exe,dev,doc,nls||deps:yes
 yes|passwd|passwd|exe,dev,doc,nls||deps:yes
-yes|pavucontrol|pavucontrol|exe,dev,doc,nls||deps:yes
+no|pavucontrol|pavucontrol|exe,dev,doc,nls||deps:yes
 yes|pciutils|pciutils,libpci3|exe,dev,doc,nls||deps:yes
 yes|perl|perl,perl-base|exe,dev,doc,nls||deps:yes
 yes|pigz|pigz|exe,dev,doc,nls||deps:yes
@@ -126,7 +126,7 @@ yes|usbutils|usbutils|exe,dev,doc,nls||deps:yes
 yes|util-linux|util-linux,mount,libuuid1,libblkid1,libmount1,libsmartcols1,uuid-dev|exe,dev,doc,nls||deps:yes
 yes|wget|wget|exe,dev>null,doc,nls||deps:yes
 yes|wireless-tools|wireless-tools,libiw30,libiw-dev|exe,dev,doc,nls||deps:yes
-yes|wireplumber|wireplumber|exe,dev,doc,nls||deps:yes
+no|wireplumber|wireplumber|exe,dev,doc,nls||deps:yes
 yes|wpa_supplicant|wpasupplicant|exe,dev>null,doc,nls||deps:yes
 yes|xorg_dri|libgl1-mesa-dri,mesa-vulkan-drivers,mesa-utils|exe,dev,doc,nls||deps:yes
 yes|xz|xz-utils,liblzma5,liblzma-dev|exe,dev,doc,nls||deps:yes
@@ -149,7 +149,7 @@ fi
 
 PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
 yes|vte|libvte-2.91-0,libvte-2.91-common,libvte-2.91-dev|exe,dev,doc,nls||deps:yes
-yes|pa-applet-deps|libpulse-dev|exe,dev,doc,nls||deps:yes
+no|pa-applet-deps|libpulse-dev|exe,dev,doc,nls||deps:yes
 "
 
 PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
@@ -172,92 +172,95 @@ yes|gcc|gcc|exe>dev,dev,doc>dev,nls>dev||deps:yes
 yes|groff|groff-base|exe,dev,doc,nls||deps:yes
 yes|make|make|exe>dev,dev,doc>dev,nls>dev||deps:yes
 yes|patch|patch|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|pipewire|pipewire-pulse,pipewire-alsa,libpipewire-0.3-dev|exe,dev,doc,nls||deps:yes
+no|pipewire|pipewire-pulse,pipewire-alsa,libpipewire-0.3-dev|exe,dev,doc,nls||deps:yes
 "
 else
-	PKGS_SPECS_TABLE="
-yes|gcc|gcc|exe,dev>exe,doc,nls||deps:yes # must be first
-$PKGS_SPECS_TABLE
-yes|abiword-deps|libboost-dev,libwv-dev,libenchant-2-dev|exe,dev,doc,nls||deps:yes
+	PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
+no|gcc|gcc|exe,dev>exe,doc,nls||deps:yes # must be first
+yes|acl|libacl1|exe,dev,doc,nls||deps:yes
+yes|alsa-lib|libasound2,libasound2-data,libasound2-dev,alsa-topology-conf,alsa-ucm-conf|exe,dev,doc,nls||deps:yes
+yes|alsa-utils|alsa-utils|exe,dev,doc,nls||deps:yes
 yes|bash-completion|bash-completion|exe,dev>null,doc,nls||deps:yes
-yes|binutils|binutils|exe,dev>exe,doc,nls||deps:yes
-yes|blueman|blueman|exe,dev,doc,nls||deps:yes
+no|binutils|binutils|exe,dev>exe,doc,nls||deps:yes
+no|blueman|blueman|exe,dev,doc,nls||deps:yes
 yes|bluez|bluez,bluez-obexd|exe,dev,doc,nls||deps:yes
-yes|breeze-cursor-theme|breeze-cursor-theme|exe,dev,doc,nls||deps:yes
+no|breeze-cursor-theme|breeze-cursor-theme|exe,dev,doc,nls||deps:yes
 yes|claws-mail-deps|libetpan-dev|exe,dev,doc,nls||deps:yes
 yes|connman|connman|exe,dev,doc,nls||deps:yes
-yes|cups|cups,cups-bsd,printer-driver-cups-pdf,foomatic-db-compressed-ppds,libcups2-dev|exe,dev,doc,nls||deps:yes
+no|cups|cups,cups-bsd,printer-driver-cups-pdf,foomatic-db-compressed-ppds,libcups2-dev|exe,dev,doc,nls||deps:yes
 yes|dbus-x11|dbus-x11|exe,dev,doc,nls||deps:yes
 yes|debconf|debconf|exe,dev,doc,nls
-yes|deadbeef-deps|libjansson-dev,libmpg123-dev,libcddb2-dev,libcdio-paranoia-dev,libfaad-dev|exe,dev,doc,nls||deps:yes
-yes|dkms|dkms|exe,dev>exe,doc,nls||deps:yes
-yes|ExpenseTracker-deps|libsqlite3-dev|exe,dev,doc,nls||deps:yes
-yes|flatpak|flatpak|exe,dev,doc,nls||deps:yes
+no|deadbeef-deps|libjansson-dev,libmpg123-dev,libcddb2-dev,libcdio-paranoia-dev,libfaad-dev|exe,dev,doc,nls||deps:yes
+no|dkms|dkms|exe,dev>exe,doc,nls||deps:yes
+no|ExpenseTracker-deps|libsqlite3-dev|exe,dev,doc,nls||deps:yes
+no|flatpak|flatpak|exe,dev,doc,nls||deps:yes
 yes|fonts-dejavu-core|fonts-dejavu-core|exe>null,dev>null,doc>null,nls>null
 yes|fonts-liberation2|fonts-liberation2|exe,dev,doc,nls||deps:yes
-yes|fonts-noto|fonts-noto-core,fonts-noto-mono,fonts-noto-cjk,fonts-noto-color-emoji|exe,dev,doc,nls||deps:yes
-yes|galculator|galculator|exe,dev>null,doc,nls||deps:yes
-yes|goffice|libgoffice-0.10-dev|exe,dev,doc,nls||deps:yes
-yes|gpart|gpart|exe,dev,doc,nls||deps:yes
-yes|gparted-deps|libgtkmm-3.0-dev,libparted-dev|exe,dev,doc,nls||deps:yes
-yes|groff|groff,groff-base|exe,dev,doc,nls||deps:yes
-yes|hardinfo-deps|libjson-glib-dev|exe,dev,doc,nls||deps:yes
+no|fonts-noto|fonts-noto-core,fonts-noto-mono,fonts-noto-cjk,fonts-noto-color-emoji|exe,dev,doc,nls||deps:yes
+no|galculator|galculator|exe,dev>null,doc,nls||deps:yes
+no|goffice|libgoffice-0.10-dev|exe,dev,doc,nls||deps:yes
+no|gpart|gpart|exe,dev,doc,nls||deps:yes
+no|gparted-deps|libgtkmm-3.0-dev,libparted-dev|exe,dev,doc,nls||deps:yes
+no|groff|groff,groff-base|exe,dev,doc,nls||deps:yes
+no|hardinfo-deps|libjson-glib-dev|exe,dev,doc,nls||deps:yes
 yes|libfuse2|libfuse2|exe,dev,doc,nls||deps:yes # used by AppImages
 yes|libva|vainfo,va-driver-all|exe,dev,doc,nls||deps:yes
-yes|man-db|man-db|exe,dev,doc,nls||deps:yes
-yes|make|make|exe,dev,doc,nls||deps:yes
+no|man-db|man-db|exe,dev,doc,nls||deps:yes
+no|make|make|exe,dev,doc,nls||deps:yes
 yes|netpbm|netpbm|exe,dev,doc,nls||deps:yes # dependency of wl_colpick
 yes|notification-daemon|notification-daemon|exe>null,dev>null,doc>null,nls>null
 yes|nscd|unscd|exe||deps:yes
 yes|ntpdate|ntpdate|exe,dev>exe,doc,nls||deps:yes #used by psync to sync local time and date from the internet.
-yes|numix-gtk-theme|numix-gtk-theme|exe,dev,doc,nls||deps:yes
-yes|openssh-client|openssh-client|exe,dev,doc,nls||deps:yes
-yes|patch|patch|exe,dev,doc,nls||deps:yes
-yes|pipewire|pipewire-pulse,pipewire-alsa,libspa-0.2-bluetooth,libpipewire-0.3-dev|exe,dev,doc,nls||deps:yes
-yes|putty|putty|exe,dev,doc,nls||deps:yes
-yes|python|python-is-python3,python3|exe,dev,doc,nls||deps:yes
-yes|python3-pkg-resources|python3-pkg-resources|exe,dev,doc,nls||deps:yes # dependency of gdebi
-yes|rsync|rsync|exe,dev,doc,nls||deps:yes
+no|numix-gtk-theme|numix-gtk-theme|exe,dev,doc,nls||deps:yes
+no|openssh-client|openssh-client|exe,dev,doc,nls||deps:yes
+no|patch|patch|exe,dev,doc,nls||deps:yes
+no|pipewire|pipewire-pulse,pipewire-alsa,libspa-0.2-bluetooth,libpipewire-0.3-dev|exe,dev,doc,nls||deps:yes
+no|putty|putty|exe,dev,doc,nls||deps:yes
+no|python|python-is-python3,python3|exe,dev,doc,nls||deps:yes
+no|python3-pkg-resources|python3-pkg-resources|exe,dev,doc,nls||deps:yes # dependency of gdebi
+no|rsync|rsync|exe,dev,doc,nls||deps:yes
 yes|sensible-utils|sensible-utils|exe,dev,doc,nls||deps:yes
-yes|transmission-deps|libevent-dev,libnatpmp-dev,libminiupnpc-dev|exe,dev,doc,nls||deps:yes
-yes|xdg-desktop-portal-gtk|xdg-desktop-portal-gtk|exe,dev,doc,nls||deps:yes
-yes|xdg-utils|xdg-utils|exe,dev,doc,nls||deps:yes
-yes|xournalpp-deps|libsndfile1-dev,portaudio19-dev,libzip-dev,libpoppler-glib-dev|exe,dev,doc,nls||deps:yes
+no|transmission-deps|libevent-dev,libnatpmp-dev,libminiupnpc-dev|exe,dev,doc,nls||deps:yes
+no|xdg-desktop-portal-gtk|xdg-desktop-portal-gtk|exe,dev,doc,nls||deps:yes
+no|xdg-utils|xdg-utils|exe,dev,doc,nls||deps:yes
+no|xournalpp-deps|libsndfile1-dev,portaudio19-dev,libzip-dev,libpoppler-glib-dev|exe,dev,doc,nls||deps:yes
 "
 fi
 
+# runtime-only mpv (no dev deps bundle)
 if [ "$DISTRO_VARIANT" != "retro" ]; then
 	PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
-yes|mpv-deps|libavcodec-dev,libavfilter-dev,libass-dev,libva-dev,libvdpau-dev,liblua5.2-dev,libdvdnav-dev,libdvdread-dev,libbluray-dev,libwayland-cursor0,libxss-dev,libxpresent-dev,libxv-dev|exe,dev,doc,nls||deps:yes
+no|mpv-deps|libavcodec-dev,libavfilter-dev,libass-dev,libva-dev,libvdpau-dev,liblua5.2-dev,libdvdnav-dev,libdvdread-dev,libbluray-dev,libwayland-cursor0,libxss-dev,libxpresent-dev,libxv-dev|exe,dev,doc,nls||deps:yes
 "
 fi
 
+# drop full build toolchain inside ISO (keep build small)
 PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
-yes|autoconf|autoconf|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|automake|automake,autotools-dev|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|autopoint|autopoint|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|bison|bison|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|ccache|ccache|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|cmake|cmake|exe>dev,dev,doc>dev,nls>dev||deps:yes # build-time dependency of xournalpp
-yes|docbook|docbook|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|flex|flex|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|g++|g++|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|git|git|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|help2man|help2man|exe>dev,dev,doc>dev,nls>dev||deps:yes # build-time dependency of xournalpp
-yes|intltool|intltool|exe>dev,dev,doc>dev,nls>dev||deps:yes #previously only in devx, but need in main f.s. to run momanager without devx.
-yes|itstool|itstool|exe>dev,dev,doc>dev,nls>dev||deps:yes # build-time dependency of gnumeric
-yes|libtool|libtool,libtool-bin|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|libxml2-utils|libxml2-utils|exe>dev,dev,doc>dev,nls>dev||deps:yes # build-time dependency of gnumeric
-yes|linux-header|linux-libc-dev|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|m4|m4|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|meson|meson|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|ninja|ninja-build|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|patchutils|patchutils|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|pkgconf|pkgconf|exe>dev,dev||deps:yes
-yes|pkg-config|pkg-config|exe>dev,dev||deps:yes # transitional package, pulls pkgconf into main SFS if not redirected to devx
-yes|texinfo|texinfo|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|wayland-dev|libwayland-dev,wayland-protocols,libwayland-bin|exe>dev,dev,doc>dev,nls>dev||deps:yes
-yes|xsltproc|xsltproc|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|autoconf|autoconf|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|automake|automake,autotools-dev|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|autopoint|autopoint|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|bison|bison|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|ccache|ccache|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|cmake|cmake|exe>dev,dev,doc>dev,nls>dev||deps:yes # build-time dependency of xournalpp
+no|docbook|docbook|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|flex|flex|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|g++|g++|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|git|git|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|help2man|help2man|exe>dev,dev,doc>dev,nls>dev||deps:yes # build-time dependency of xournalpp
+no|intltool|intltool|exe>dev,dev,doc>dev,nls>dev||deps:yes #previously only in devx, but need in main f.s. to run momanager without devx.
+no|itstool|itstool|exe>dev,dev,doc>dev,nls>dev||deps:yes # build-time dependency of gnumeric
+no|libtool|libtool,libtool-bin|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|libxml2-utils|libxml2-utils|exe>dev,dev,doc>dev,nls>dev||deps:yes # build-time dependency of gnumeric
+no|linux-header|linux-libc-dev|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|m4|m4|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|meson|meson|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|ninja|ninja-build|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|patchutils|patchutils|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|pkgconf|pkgconf|exe>dev,dev||deps:yes
+no|pkg-config|pkg-config|exe>dev,dev||deps:yes # transitional package, pulls pkgconf into main SFS if not redirected to devx
+no|texinfo|texinfo|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|wayland-dev|libwayland-dev,wayland-protocols,libwayland-bin|exe>dev,dev,doc>dev,nls>dev||deps:yes
+no|xsltproc|xsltproc|exe>dev,dev,doc>dev,nls>dev||deps:yes
 "
 
 PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
@@ -281,47 +284,61 @@ yes|non-free-firmware-pc|amd64-microcode,bluez-firmware,firmware-amd-graphics,fi
 "
 fi
 
-#Dpup Bookworm64 extra apps/libs
+# Dpup Bookworm64 extra apps/libs (trimmed)
 if [ "$DISTRO_VARIANT" != "retro" ]; then
 	PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
-yes|qpdfview|qpdfview,qpdfview-djvu-plugin,qpdfview-ps-plugin,qpdfview-pdf-poppler-plugin,qpdfview-translations|exe,dev,doc,nls||deps:yes #other requisite qt5 deps provided by simplescreenrecorder below
-yes|qwinff|qwinff|exe,dev,doc,nls||deps:yes
-yes|simplescreenrecorder|simplescreenrecorder|exe,dev,doc,nls||deps:yes
-yes|diffuse|diffuse|exe,dev,doc,nls||deps:yes
-yes|easytag|easytag|exe,dev,doc,nls||deps:yes
-yes|ffmpeg|ffmpeg|exe,dev,doc,nls||deps:yes
-#yes|frugalpup||exe,dev,doc,nls
-yes|gftp|gftp-gtk|exe,dev>null,doc,nls||deps:yes
+no|qpdfview|qpdfview,qpdfview-djvu-plugin,qpdfview-ps-plugin,qpdfview-pdf-poppler-plugin,qpdfview-translations|exe,dev,doc,nls||deps:yes
+no|qwinff|qwinff|exe,dev,doc,nls||deps:yes
+no|simplescreenrecorder|simplescreenrecorder|exe,dev,doc,nls||deps:yes
+no|diffuse|diffuse|exe,dev,doc,nls||deps:yes
+no|easytag|easytag|exe,dev,doc,nls||deps:yes
+no|ffmpeg|ffmpeg|exe,dev,doc,nls||deps:yes
+no|gftp|gftp-gtk|exe,dev>null,doc,nls||deps:yes
 yes|grub4dos||exe,dev>null,doc,nls
-yes|guvcview|guvcview|exe,dev,doc,nls||deps:yes
-yes|htop|htop|exe,dev>null,doc,nls||deps:yes
-yes|isomaster|isomaster|exe,dev,doc,nls||deps:yes
-yes|libdbus-glib|libdbus-glib-1-2|exe,dev,doc,nls||deps:yes #dependency of firefox_esr portable
+no|guvcview|guvcview|exe,dev,doc,nls||deps:yes
+no|htop|htop|exe,dev>null,doc,nls||deps:yes
+no|isomaster|isomaster|exe,dev,doc,nls||deps:yes
+no|libdbus-glib|libdbus-glib-1-2|exe,dev,doc,nls||deps:yes
 yes|ListDD||exe,dev,doc,nls
-yes|mhwaveedit|mhwaveedit|exe,dev>null,doc,nls||deps:yes
+no|mhwaveedit|mhwaveedit|exe,dev>null,doc,nls||deps:yes
 yes|mpv|mpv|exe,dev,doc,nls||deps:yes
-yes|celluloid|celluloid|exe,dev,doc,nls||deps:yes
+no|celluloid|celluloid|exe,dev,doc,nls||deps:yes
 yes|PackIt||exe,dev
-yes|parcellite|parcellite|exe,dev>null,doc,nls||deps:yes
-yes|peasydiff||exe
-yes|peasyglue||exe,dev
-yes|peasyport||exe| #rcrsn51, alternative to superscan.
-yes|peasyprint||exe,dev
-no|peasyscale||exe #rcrsn51, jpg image resizer.
-yes|psynclient||exe
+no|parcellite|parcellite|exe,dev>null,doc,nls||deps:yes
+no|peasydiff||exe
+no|peasyglue||exe,dev
+no|peasyport||exe|
+no|peasyscale||exe
+no|psynclient||exe
 yes|PupClockset||exe
-yes|Pup-Kview||exe
+no|Pup-Kview||exe
 yes|Pup-SysInfo||exe
 yes|rxvt-unicode|rxvt-unicode|exe,dev>null,doc,nls||deps:yes
-yes|simple-scan|simple-scan|exe,dev>null,doc,nls||deps:yes
-yes|streamripper|streamripper|exe,dev||deps:yes
-yes|tas||exe,nls
-yes|UrxvtControl||exe,dev
-yes|uextract||exe,dev
-yes|dvdauthor|dvdauthor|exe,dev>null,doc,nls||deps:yes #pburn dependency
-yes|dvd+rwtools|dvd+rw-tools,genisoimage,growisofs|exe,dev>null,doc,nls||deps:yes #pburn dependency
-yes|vamps|vamps|exe,dev,doc,nls||deps:yes #pburn dependency
-yes|vobcopy|vobcopy|exe,dev,doc,nls||deps:yes #pburn dependency
-yes|wmctrl|wmctrl|exe,dev,doc,nls||deps:yes
+no|simple-scan|simple-scan|exe,dev>null,doc,nls||deps:yes
+no|streamripper|streamripper|exe,dev||deps:yes
+no|tas||exe,nls
+no|UrxvtControl||exe,dev
+no|uextract||exe,dev
+no|dvdauthor|dvdauthor|exe,dev>null,doc,nls||deps:yes
+no|dvd+rwtools|dvd+rw-tools,genisoimage,growisofs|exe,dev>null,doc,nls||deps:yes
+no|vamps|vamps|exe,dev,doc,nls||deps:yes
+no|vobcopy|vobcopy|exe,dev,doc,nls||deps:yes
+no|wmctrl|wmctrl|exe,dev,doc,nls||deps:yes
 "
 fi
+
+# --- Minimal desktop apps (your requirements) ---
+PKGS_SPECS_TABLE="$PKGS_SPECS_TABLE
+yes|pcmanfm|pcmanfm||
+yes|gvfs|gvfs||
+yes|gvfs-backends|gvfs-backends||
+no|rox-filer|||
+
+yes|firefox-esr|firefox-esr||
+yes|viewnior|viewnior||
+yes|geany|geany||
+yes|abiword|abiword||
+
+yes|zathura|zathura||
+yes|zathura-pdf-poppler|zathura-pdf-poppler||
+'
