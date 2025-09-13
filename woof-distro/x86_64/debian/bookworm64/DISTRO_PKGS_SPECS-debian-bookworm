@@ -1,4 +1,4 @@
-# Clean PKGS_SPECS for Debian Bookworm x86_64 (LibreOffice + UEFI + Build tools for chroot)
+# Clean PKGS_SPECS for Debian Bookworm x86_64 (LibreOffice + UEFI + Build tools + GTK3 dev)
 FALLBACKS_COMPAT_VERSIONS=''
 
 PKGS_SPECS_TABLE='
@@ -54,7 +54,8 @@ yes|gdisk|gdisk|exe,dev,doc,nls||deps:yes
 yes|gnutls|libgnutls30,libgnutls28-dev|exe,dev,doc,nls||deps:yes
 yes|grep|grep|exe,dev>null,doc,nls||deps:yes
 yes|gsettings-desktop-schemas|gsettings-desktop-schemas|exe,dev,doc,nls||deps:yes
-yes|gtk+3|libgtk-3-0,libgtk-3-common,gtk-update-icon-cache,adwaita-icon-theme|exe,dev,doc,nls||deps:yes
+# NOTE: include libgtk-3-dev so gtk+-3.0.pc and headers are present
+yes|gtk+3|libgtk-3-0,libgtk-3-dev,libgtk-3-common,gtk-update-icon-cache,adwaita-icon-theme|exe,dev,doc,nls||deps:yes
 yes|hdparm|hdparm|exe,dev>null,doc,nls||deps:yes
 yes|hicolor-icon-theme|hicolor-icon-theme|exe,dev>null,doc,nls||deps:yes
 yes|icu|libicu72,libicu-dev|exe,dev,doc,nls||deps:yes
@@ -88,6 +89,8 @@ yes|perl|perl,perl-base|exe,dev,doc,nls||deps:yes
 yes|pigz|pigz|exe,dev,doc,nls||deps:yes
 yes|procps|procps|exe,dev,doc,nls||deps:yes
 yes|psmisc|psmisc|exe,dev>null,doc,nls||deps:yes
+# Pull in pkgconf via transitional package, and keep pkg-config tool visible
+yes|pkg-config|pkg-config|exe>dev,dev||deps:yes
 yes|readline|libreadline8,libreadline-dev,readline-common|exe,dev,doc,nls||deps:yes
 yes|sed|sed|exe,dev>null,doc,nls||deps:yes
 yes|sgml-base|sgml-base|exe,dev,doc,nls||deps:yes
