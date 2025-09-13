@@ -1,10 +1,12 @@
-# Clean PKGS_SPECS for Debian Bookworm x86_64 (HARD LibreOffice + UEFI tools)
+# Clean PKGS_SPECS for Debian Bookworm x86_64 (LibreOffice + UEFI + Build tools for chroot)
 FALLBACKS_COMPAT_VERSIONS=''
 
 PKGS_SPECS_TABLE='
+# ---- Disable AbiWord ----
 no|abiword|||
 no|abiword-deps|||
 
+# ---- Core base ----
 yes|acl|libacl1|exe,dev,doc,nls||deps:yes
 yes|adduser|adduser|exe,dev,doc,nls
 yes|alsa-lib|libasound2,libasound2-data,libasound2-dev,alsa-topology-conf,alsa-ucm-conf|exe,dev,doc,nls||deps:yes
@@ -119,11 +121,15 @@ yes|xorg_base_new|libglapi-mesa,libx11-xcb1,xfonts-utils,mesa-common-dev,libgl1,
 yes|xserver-xorg-video-vmware|xserver-xorg-video-vmware|exe>null,dev>null,doc>null,nls>null
 yes|xserver_xorg|xserver-xorg,xserver-xorg-video-all,xserver-xorg-input-all,xserver-xorg-input-wacom,xserver-xorg-video-intel,xinit|exe,dev,doc,nls||deps:yes
 
-# ---- Firmware & UEFI tools (x86_64) ----
+# ---- UEFI + firmware ----
 yes|gnu-efi|gnu-efi|exe>dev,dev,doc>dev,nls>dev||deps:yes
 yes|shim-signed|shim-signed,grub-efi-amd64-signed|exe>dev,dev,doc>dev,nls>dev||deps:yes
 yes|efibootmgr|efibootmgr||
 yes|non-free-firmware-pc|amd64-microcode,bluez-firmware,firmware-amd-graphics,firmware-atheros,firmware-brcm80211,firmware-intel-sound,firmware-iwlwifi,firmware-linux,firmware-linux-nonfree,firmware-realtek,firmware-sof-signed,intel-microcode|exe,dev,doc,nls||deps:yes
+
+# ---- Build tools inside chroot (so petbuilds work) ----
+yes|patch|patch|exe,dev,doc,nls||deps:yes
+yes|build-essential|build-essential|exe>dev,dev,doc>dev,nls>dev||deps:yes
 
 # ---- Dpup extras (trimmed) ----
 yes|grub4dos||exe,dev>null,doc,nls
