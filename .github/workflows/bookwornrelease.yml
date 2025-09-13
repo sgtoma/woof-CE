@@ -1,4 +1,4 @@
-name: release
+name: release-bookworm
 
 on:
   workflow_dispatch:
@@ -18,19 +18,16 @@ on:
       arch:
         description: 'Architecture'
         type: choice
-        required: true
         options: [x86_64, x86]
         default: x86_64
       compat-distro:
         description: 'Compatible distro (target)'
         type: choice
-        required: true
         options: [debian, ubuntu]
         default: debian
       compat-distro-version:
         description: 'Compatible distro version (match the distro!)'
         type: choice
-        required: true
         options: [bookworm64, jammy64, noble64]
         default: bookworm64
       kernel:
@@ -40,7 +37,7 @@ on:
       prefix:
         description: 'File name prefix for tag/release'
         required: false
-        default: 'bookwarmpup64ce'
+        default: 'bookwormpup64ce'
       release:
         type: boolean
         description: 'Create a GitHub Release (needs repo permissions: Read/Write)'
@@ -49,17 +46,11 @@ on:
       runner:
         type: choice
         description: 'Build environment (GitHub runner)'
-        options:
-          - ubuntu-22.04
-          - ubuntu-24.04
+        options: [ubuntu-22.04, ubuntu-24.04]
         default: ubuntu-22.04
 
 permissions:
   contents: write
-
-concurrency:
-  group: release-${{ github.ref_name }}
-  cancel-in-progress: false
 
 jobs:
   build:
@@ -77,20 +68,8 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
       TZ: UTC
     steps:
-      - name: Checkout repo (branch you ran from)
+      - name: Checkout repo
         uses: actions/checkout@v4
-
-      - name: Show inputs
-        run: |
-          echo "NAME=$NAME"
-          echo "VER=$VER"
-          echo "SUFFIX=$SUFFIX"
-          echo "ARCH=$ARCH"
-          echo "COMPAT=$COMPAT"
-          echo "VERSTR=$VERSTR"
-          echo "KERNEL=$KERNEL"
-          echo "PREFIX=$PREFIX"
-          echo "Runner=$(lsb_release -sd || true)"
 
       - name: Validate distro/version combo
         shell: bash
@@ -108,14 +87,12 @@ jobs:
       - name: Install build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            bc bison build-essential ca-certificates cpio curl dosfstools gawk git jq \
-            mtools rsync squashfs-tools xorriso xz-utils zstd file wget
+          sudo apt-get install -y --no-install-recommends             bc bison build-essential ca-certificates cpio curl dosfstools gawk git jq             mtools rsync squashfs-tools xorriso xz-utils zstd file wget
 
-      - name: Confirm config path and spec file
+      - name: Build (merge2out + 0setup..3builddistro)
         shell: bash
         run: |
-          set -eux
+          set -euxo pipefail
           CFG="woof-distro/${ARCH}/${COMPAT}/${VERSTR}"
           if [[ ! -d "$CFG" ]]; then
             echo "::error::Missing configuration directory: $CFG"
@@ -123,53 +100,19 @@ jobs:
             ls -1 "woof-distro/${ARCH}/${COMPAT}" || true
             exit 1
           fi
-          # Derive spec filename
-          base="${VERSTR%64}"
-          if [[ "$COMPAT" == "debian" ]]; then
-            SPEC="$CFG/DISTRO_PKGS_SPECS-debian-${base}"
-          else
-            SPEC="$CFG/DISTRO_PKGS_SPECS-ubuntu-${base}"
-          fi
-          if [[ ! -f "$SPEC" ]]; then
-            echo "::error::Expected spec file not found: $SPEC"
-            exit 1
-          fi
-          echo "Using spec: $SPEC"
-          echo "First 10 lines:"
-          head -n 10 "$SPEC" || true
-          echo "Grepping for abiword rows (should be disabled if you used HARD variant):"
-          grep -n '^.*abiword' "$SPEC" || true
-
-      - name: Run merge2out
-        shell: bash
-        run: |
-          set -eux
-          CFG="woof-distro/${ARCH}/${COMPAT}/${VERSTR}"
           chmod +x ./merge2out
-          # Pipe empty answers to non-interactive prompts
-          yes "" | sudo -E ./merge2out "$CFG"
+          # Avoid 'yes | ...' SIGPIPE. Feed empty stdin instead.
+          sudo -E ./merge2out "$CFG" </dev/null
 
-      - name: Locate build outputs
-        id: findout
-        shell: bash
-        run: |
-          set -eux
-          # Find ISO and SFS anywhere under repo after build
-          mapfile -t ISOS < <(find . -type f -name '*.iso' | sort)
-          mapfile -t SFS < <(find . -type f -name '*.sfs' | sort)
-          echo "Found ISOs: ${#ISOS[@]}"
-          printf '%s\n' "${ISOS[@]}" || true
-          echo "Found SFS: ${#SFS[@]}"
-          printf '%s\n' "${SFS[@]}" || true
-          # Stash paths to outputs
-          {
-            echo "isos<<EOF"
-            printf '%s\n' "${ISOS[@]}"
-            echo "EOF"
-            echo "sfses<<EOF"
-            printf '%s\n' "${SFS[@]}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          OUT="woof-out_${ARCH}_${ARCH}_${COMPAT}_${VERSTR}"
+          [[ -d "$OUT" ]] || { echo "::error::Expected output dir not found: $OUT"; exit 1; }
+
+          pushd "$OUT"
+          sudo -E ./0setup </dev/null
+          sudo -E ./1download </dev/null
+          sudo -E ./2createpackages </dev/null
+          sudo -E ./3builddistro </dev/null
+          popd
 
       - name: Generate SHA512 checksums
         if: always()
