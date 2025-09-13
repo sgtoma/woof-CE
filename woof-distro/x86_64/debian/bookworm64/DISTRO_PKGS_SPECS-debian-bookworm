@@ -1,17 +1,10 @@
-# Clean PKGS_SPECS for Debian Bookworm x86_64 (HARD LibreOffice)
-# - Single PKGS_SPECS_TABLE block (no appends, no conditionals)
-# - AbiWord disabled, LibreOffice Writer enabled
-# - PCManFM + GVFS, Firefox ESR, mpv, Viewnior, Geany, Zathura
-# - Core firmware, networking, audio, Xorg kept ON
-
+# Clean PKGS_SPECS for Debian Bookworm x86_64 (HARD LibreOffice + UEFI tools)
 FALLBACKS_COMPAT_VERSIONS=''
 
 PKGS_SPECS_TABLE='
-# ---- Force-disable AbiWord ----
 no|abiword|||
 no|abiword-deps|||
 
-# ---- Core base ----
 yes|acl|libacl1|exe,dev,doc,nls||deps:yes
 yes|adduser|adduser|exe,dev,doc,nls
 yes|alsa-lib|libasound2,libasound2-data,libasound2-dev,alsa-topology-conf,alsa-ucm-conf|exe,dev,doc,nls||deps:yes
@@ -126,12 +119,13 @@ yes|xorg_base_new|libglapi-mesa,libx11-xcb1,xfonts-utils,mesa-common-dev,libgl1,
 yes|xserver-xorg-video-vmware|xserver-xorg-video-vmware|exe>null,dev>null,doc>null,nls>null
 yes|xserver_xorg|xserver-xorg,xserver-xorg-video-all,xserver-xorg-input-all,xserver-xorg-input-wacom,xserver-xorg-video-intel,xinit|exe,dev,doc,nls||deps:yes
 
-# ---- Firmware (x86_64) ----
+# ---- Firmware & UEFI tools (x86_64) ----
 yes|gnu-efi|gnu-efi|exe>dev,dev,doc>dev,nls>dev||deps:yes
 yes|shim-signed|shim-signed,grub-efi-amd64-signed|exe>dev,dev,doc>dev,nls>dev||deps:yes
+yes|efibootmgr|efibootmgr||
 yes|non-free-firmware-pc|amd64-microcode,bluez-firmware,firmware-amd-graphics,firmware-atheros,firmware-brcm80211,firmware-intel-sound,firmware-iwlwifi,firmware-linux,firmware-linux-nonfree,firmware-realtek,firmware-sof-signed,intel-microcode|exe,dev,doc,nls||deps:yes
 
-# ---- Dpup extras (trimmed to your needs) ----
+# ---- Dpup extras (trimmed) ----
 yes|grub4dos||exe,dev>null,doc,nls
 yes|ListDD||exe,dev,doc,nls
 yes|PackIt||exe,dev
