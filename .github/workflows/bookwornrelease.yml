@@ -87,16 +87,20 @@ jobs:
       - name: Install build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends             bc bison build-essential ca-certificates cpio curl dosfstools gawk git jq             mtools rsync squashfs-tools xorriso xz-utils zstd file wget
+          sudo apt-get install -y --no-install-recommends             bc bison build-essential ca-certificates cpio curl dosfstools gawk git jq             mtools rsync squashfs-tools xorriso xz-utils zstd file wget             patch bzip2 libncurses-dev
 
       - name: Build (merge2out + 0setup..3builddistro)
         shell: bash
         run: |
           set -euxo pipefail
           CFG="woof-distro/${ARCH}/${COMPAT}/${VERSTR}"
-          [[ -d "$CFG" ]] || { echo "::error::Missing configuration directory: $CFG"; exit 1; }
+          if [[ ! -d "$CFG" ]]; then
+            echo "::error::Missing configuration directory: $CFG"
+            echo "Available under woof-distro/${ARCH}/${COMPAT}:"
+            ls -1 "woof-distro/${ARCH}/${COMPAT}" || true
+            exit 1
+          fi
           chmod +x ./merge2out
-          # No SIGPIPE
           sudo -E ./merge2out "$CFG" </dev/null
 
           NAME="woof-out_${ARCH}_${ARCH}_${COMPAT}_${VERSTR}"
@@ -114,7 +118,6 @@ jobs:
           sudo -E ./3builddistro </dev/null
           popd
 
-          # Collect outputs into workspace for upload
           mkdir -p dist
           find "$OUT" -type f \( -name '*.iso' -o -name '*.sfs' \) -exec cp -v {} dist/ \;
 
@@ -123,13 +126,18 @@ jobs:
         shell: bash
         run: |
           set -eux
-          cd dist
-          rm -f SHA512checksums.txt
-          find . -type f -name '*.sfs' -exec sha512sum {} \; > SHA512checksums.txt || true
-          find . -type f -name '*.iso' -exec sha512sum {} \; >> SHA512checksums.txt || true
-          cat SHA512checksums.txt || true
+          if [[ -d dist ]]; then
+            cd dist
+            rm -f SHA512checksums.txt
+            find . -type f -name '*.sfs' -exec sha512sum {} \; > SHA512checksums.txt || true
+            find . -type f -name '*.iso' -exec sha512sum {} \; >> SHA512checksums.txt || true
+            cat SHA512checksums.txt || true
+          else
+            echo "dist/ not found; build likely failed earlier."
+          fi
 
       - name: Upload artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.workflow }}-${{ inputs.arch }}-${{ inputs.compat-distro }}-${{ inputs.compat-distro-version }}-${{ github.run_number }}
@@ -139,7 +147,6 @@ jobs:
             dist/SHA512checksums.txt
           if-no-files-found: error
           retention-days: 7
-
 
   release:
     name: Create GitHub Release (optional)
@@ -164,3 +171,4 @@ jobs:
             *.iso
             *.sfs
             SHA512checksums.txt
+
