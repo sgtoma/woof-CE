@@ -8,27 +8,37 @@ on:
       name:
         description: 'Human-readable name'
         required: true
-        default: 'JammyPup64 CE'
+        default: 'BookwormPup64 CE'
       version:
         description: 'Version number'
         required: true
-        default: '10.0'
+        default: '1.0'
       suffix:
         description: 'Release name suffix, with leading -'
         required: false
-        default: '-alpha1'
-      arch:
+        default: ''
+     arch:
         description: 'Architecture'
-        required: false
+        required: true
         default: 'x86_64'
       compat-distro:
         description: 'Compatible distro'
-        required: false
-        default: 'ubuntu'
+        type: choice
+        required: true
+        options:
+          - debian
+          - ubuntu
+        default: debian
       compat-distro-version:
         description: 'Compatible distro version'
-        required: false
-        default: 'jammy64'
+        type: choice
+        required: true
+        # Pick the one that matches the distro you choose above.
+        options:
+          - bookworm64   # Debian 12
+          - jammy64      # Ubuntu 22.04
+          - noble64      # Ubuntu 24.04
+        default: bookworm64
       kernel:
         description: 'Kernel version'
         required: false
@@ -36,7 +46,7 @@ on:
       prefix:
         description: 'File name prefix'
         required: false
-        default: 'jammypup64ce'
+        default: 'bookwarmpup64ce'
       release:
         type: boolean
         description: 'Upload release draft'
