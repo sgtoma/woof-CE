@@ -94,18 +94,18 @@ jobs:
         run: |
           set -euxo pipefail
           CFG="woof-distro/${ARCH}/${COMPAT}/${VERSTR}"
-          if [[ ! -d "$CFG" ]]; then
-            echo "::error::Missing configuration directory: $CFG"
-            echo "Available under woof-distro/${ARCH}/${COMPAT}:"
-            ls -1 "woof-distro/${ARCH}/${COMPAT}" || true
-            exit 1
-          fi
+          [[ -d "$CFG" ]] || { echo "::error::Missing configuration directory: $CFG"; exit 1; }
           chmod +x ./merge2out
-          # Avoid 'yes | ...' SIGPIPE. Feed empty stdin instead.
+          # No SIGPIPE
           sudo -E ./merge2out "$CFG" </dev/null
 
-          OUT="woof-out_${ARCH}_${ARCH}_${COMPAT}_${VERSTR}"
-          [[ -d "$OUT" ]] || { echo "::error::Expected output dir not found: $OUT"; exit 1; }
+          NAME="woof-out_${ARCH}_${ARCH}_${COMPAT}_${VERSTR}"
+          OUT=""
+          [[ -d "$NAME" ]] && OUT="$NAME"
+          [[ -z "$OUT" && -d "../$NAME" ]] && OUT="../$NAME"
+          [[ -z "$OUT" ]] && OUT="$(find . .. -maxdepth 2 -type d -name "$NAME" | head -n1 || true)"
+          [[ -n "$OUT" && -d "$OUT" ]] || { echo "::error::Expected output dir not found: $NAME (tried . and ..)"; exit 1; }
+          echo "Using OUT=$OUT"
 
           pushd "$OUT"
           sudo -E ./0setup </dev/null
@@ -114,11 +114,16 @@ jobs:
           sudo -E ./3builddistro </dev/null
           popd
 
+          # Collect outputs into workspace for upload
+          mkdir -p dist
+          find "$OUT" -type f \( -name '*.iso' -o -name '*.sfs' \) -exec cp -v {} dist/ \;
+
       - name: Generate SHA512 checksums
         if: always()
         shell: bash
         run: |
           set -eux
+          cd dist
           rm -f SHA512checksums.txt
           find . -type f -name '*.sfs' -exec sha512sum {} \; > SHA512checksums.txt || true
           find . -type f -name '*.iso' -exec sha512sum {} \; >> SHA512checksums.txt || true
@@ -129,11 +134,12 @@ jobs:
         with:
           name: ${{ github.workflow }}-${{ inputs.arch }}-${{ inputs.compat-distro }}-${{ inputs.compat-distro-version }}-${{ github.run_number }}
           path: |
-            **/*.iso
-            **/*.sfs
-            SHA512checksums.txt
+            dist/*.iso
+            dist/*.sfs
+            dist/SHA512checksums.txt
           if-no-files-found: error
           retention-days: 7
+
 
   release:
     name: Create GitHub Release (optional)
