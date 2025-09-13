@@ -7,8 +7,9 @@
 
 export XDG_SESSION_TYPE=x11
 
+# Read preferred desktop app (pcmanfm or rox). Default to pcmanfm.
 [ -f /etc/desktop_app ] && read -r desktop < /etc/desktop_app
-[ "$desktop" = "" ] && desktop=rox
+[ -z "$desktop" ] && desktop=pcmanfm
 
 . /etc/rc.d/PUPSTATE
 
@@ -55,15 +56,15 @@ if [ -e /usr/bin/wireplumber ] || [ -e /usr/bin/pipewire-media-session ]; then
     run-as-spot pipewire &
     (
         while [ ! -e /tmp/runtime-spot/pipewire-0 ]; do sleep 0.1; done
-	
+
         run-as-spot pipewire-pulse &
-	
+
 	if [ -e /usr/bin/wireplumber ]; then
          run-as-spot wireplumber &
 	else
 	 run-as-spot pipewire-media-session &
 	fi
-    
+
     ) &
     export PULSE_SERVER=unix:/tmp/runtime-spot/pulse/native
     export PULSE_COOKIE=/home/spot/.config/pulse/cookie
@@ -137,13 +138,13 @@ fi
 
 [ -f /usr/bin/xsetroot ] && xsetroot -cursor_name top_left_arrow
 
-#relocates right-side icons to actual right-side of screen...
-/usr/sbin/fixPuppyPin /root/Choices/ROX-Filer/PuppyPin #v1.0.7
+# Only manipulate ROX pinboard if ROX desktop is selected
+[ "$desktop" = "rox" ] && /usr/sbin/fixPuppyPin /root/Choices/ROX-Filer/PuppyPin #v1.0.7
 
 sleep 1 # let the dust settle
 
 case $desktop in
- pcmanfm) pcmanfm --desktop & ;;
+ pcmanfm) pcmanfm --desktop --profile Puppy & ;;
  rox)
 	if [ -f /root/Choices/ROX-Filer/PuppyPan1 ];then
 		roxfiler -p /root/Choices/ROX-Filer/PuppyPin -r /root/Choices/ROX-Filer/PuppyPan1
